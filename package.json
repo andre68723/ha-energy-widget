@@ -1,0 +1,31 @@
+{
+  "name": "ha-energy-widget",
+  "version": "0.1.1",
+  "description": "Home Assistant Lovelace card: rings and a 15-minute timeline of the last 24 hours of energy flows, inspired by aharren/ios-energy-widget.",
+  "license": "MIT",
+  "author": "andre68723",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "test": "vitest run",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run build"
+  },
+  "dependencies": {
+    "lit": "^3.3.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
+    "@types/node": "^24.19.2",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.4"
+  }
+}

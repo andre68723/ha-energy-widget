@@ -1,0 +1,83 @@
+const en = {
+  loading: "Loading energy data…",
+  error: "Energy data could not be loaded.",
+  no_sources: "No energy sources found. Configure the Energy dashboard or select entities.",
+  consumption: "Consumption",
+  feed: "Feed-in",
+  production: "Production",
+  battery: "Battery",
+  timeline: "Energy timeline",
+  forecast: "Forecast",
+  estimated: "Split is estimated from the meters.",
+  // editor
+  layout: "Layout",
+  time_range: "Time range",
+  title: "Title",
+  forecast_line: "Show solar forecast",
+  entities: "Energy sources (empty = Energy dashboard)",
+  solar: "Solar production",
+  grid_import: "Grid import",
+  grid_export: "Grid export",
+  battery_charge: "Battery charge",
+  battery_discharge: "Battery discharge",
+  battery_level: "Battery level",
+  max: "Scale (kWh)",
+  max_consumption: "Consumption ring",
+  max_production: "Production ring",
+  max_feed: "Feed-in ring",
+  max_interval: "Timeline per 15 minutes",
+  colors: "Colors (any CSS color)",
+  tap_action: "Tap action",
+  layout_rings_timeline: "Rings and timeline",
+  layout_rings: "Rings",
+  layout_timeline: "Timeline",
+  layout_nested_rings: "Nested rings",
+  range_last_24h: "Last 24 hours",
+  range_today: "Today",
+} as const;
+
+export type Key = keyof typeof en;
+
+const de: Record<Key, string> = {
+  loading: "Energiedaten werden geladen …",
+  error: "Energiedaten konnten nicht geladen werden.",
+  no_sources: "Keine Energiequellen gefunden. Energie-Dashboard einrichten oder Entitäten wählen.",
+  consumption: "Verbrauch",
+  feed: "Einspeisung",
+  production: "Erzeugung",
+  battery: "Batterie",
+  timeline: "Energie-Verlauf",
+  forecast: "Prognose",
+  estimated: "Aufteilung aus den Zählern geschätzt.",
+  layout: "Layout",
+  time_range: "Zeitraum",
+  title: "Titel",
+  forecast_line: "Solarprognose anzeigen",
+  entities: "Energiequellen (leer = Energie-Dashboard)",
+  solar: "Solarerzeugung",
+  grid_import: "Netzbezug",
+  grid_export: "Netzeinspeisung",
+  battery_charge: "Batterie laden",
+  battery_discharge: "Batterie entladen",
+  battery_level: "Batteriestand",
+  max: "Skala (kWh)",
+  max_consumption: "Ring Verbrauch",
+  max_production: "Ring Erzeugung",
+  max_feed: "Ring Einspeisung",
+  max_interval: "Verlauf je 15 Minuten",
+  colors: "Farben (beliebige CSS-Farbe)",
+  tap_action: "Tippen",
+  layout_rings_timeline: "Ringe und Verlauf",
+  layout_rings: "Ringe",
+  layout_timeline: "Verlauf",
+  layout_nested_rings: "Verschachtelte Ringe",
+  range_last_24h: "Letzte 24 Stunden",
+  range_today: "Heute",
+};
+
+const tables: Record<string, Record<Key, string>> = { en, de };
+
+export function localize(language: string | undefined, key: Key): string {
+  const lang = (language ?? "en").toLowerCase().split("-")[0] ?? "en";
+  return (tables[lang] ?? en)[key] ?? en[key];
+}

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HA Energy Widget dev page</title>
+    <style>
+      :root {
+        --primary-text-color: #212121;
+        --secondary-text-color: #727272;
+        --divider-color: #e0e0e0;
+        --primary-color: #03a9f4;
+        --ha-card-background: #fff;
+        --energy-solar-color: #ff9800;
+        --energy-grid-consumption-color: #488fc2;
+        --energy-grid-return-color: #8353d1;
+        --energy-battery-in-color: #4db6ac;
+        --energy-battery-out-color: #f06292;
+      }
+      :root[data-theme="dark"] {
+        --primary-text-color: #e1e1e1;
+        --secondary-text-color: #9b9b9b;
+        --divider-color: #3a3a3a;
+        --ha-card-background: #1c1c1c;
+        background: #111;
+        color-scheme: dark;
+      }
+      body { font-family: system-ui, sans-serif; margin: 16px; color: var(--primary-text-color); }
+      .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+      :root { background: #f4f4f4; }
+    </style>
+  </head>
+  <body>
+    <div class="grid" id="grid"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
