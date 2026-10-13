@@ -1,5 +1,5 @@
 /** Turns the model into what is drawn: ring specs and timeline geometry. Pure, no DOM. */
-import type { ResolvedConfig } from "./config";
+import type { Channel, ResolvedConfig } from "./config";
 import { buildTimeline, type Series, TIMELINE_ROLES, type Timeline, totalsFrom } from "./model";
 
 export interface RingSegment {
@@ -81,6 +81,24 @@ export function buildRings(
     });
   }
   return rings;
+}
+
+export interface LegendItem {
+  /** Also the localization key of the label. */
+  id: Channel | "forecast";
+  color: string;
+  /** The forecast is a line, everything else a filled swatch. */
+  line: boolean;
+}
+
+/** Colors that are actually drawn: only configured channels, and the forecast only when it has data. */
+export function buildLegend(series: Series, config: ResolvedConfig, hasForecast: boolean): LegendItem[] {
+  const order: Channel[] = ["solar", "grid_import", "grid_export", "battery_discharge", "battery_charge"];
+  const items: LegendItem[] = order
+    .filter((channel) => series.configured[channel])
+    .map((id) => ({ id, color: config.colors[id], line: false }));
+  if (hasForecast) items.push({ id: "forecast", color: "var(--secondary-text-color, gray)", line: true });
+  return items;
 }
 
 export interface Bar {

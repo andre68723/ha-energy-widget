@@ -1,5 +1,5 @@
 import { html, nothing, svg } from "lit";
-import type { RingSpec, TimelineView } from "./view";
+import type { LegendItem, RingSpec, TimelineView } from "./view";
 import { COLUMN, HEIGHT } from "./view";
 
 const CENTER = 50;
@@ -55,4 +55,14 @@ export function timelineTemplate(view: TimelineView, label: string) {
       ${view.nowX > 0 && view.nowX < COLUMN * 96 ? svg`<line class="now" x1=${view.nowX} x2=${view.nowX} y1="0" y2=${HEIGHT}></line>` : nothing}
     </svg>
   </div>`;
+}
+
+export function legendTemplate(items: LegendItem[], labels: string[]) {
+  if (items.length === 0) return nothing;
+  return html`<ul class="legend">
+    ${items.map(
+      (item, i) =>
+        html`<li><span class=${item.line ? "swatch line" : "swatch"} style="--swatch:${item.color}"></span>${labels[i]}</li>`,
+    )}
+  </ul>`;
 }

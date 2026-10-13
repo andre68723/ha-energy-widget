@@ -83,8 +83,35 @@ export const cardStyles = css`
     flex: 0 0 auto;
   }
   /* Rings only: center them in a tall card instead of leaving the space below. */
-  .rings:last-child {
+  .rings {
     margin-block: auto;
+  }
+  .legend {
+    flex: 0 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px 14px;
+    margin: 0;
+    padding: 0 4px;
+    list-style: none;
+    font-size: 0.8rem;
+    color: var(--secondary-text-color);
+  }
+  .legend li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--swatch);
+  }
+  .swatch.line {
+    height: 2px;
+    border-radius: 0;
   }
   .forecast {
     fill: none;

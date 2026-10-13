@@ -13,10 +13,10 @@ import {
 import { type Key, localize } from "./localize";
 import { totalsFrom } from "./model";
 import { cardStyles } from "./styles";
-import { nestedRingsTemplate, ringTemplate, timelineTemplate } from "./templates";
+import { legendTemplate, nestedRingsTemplate, ringTemplate, timelineTemplate } from "./templates";
 import { PART_MS } from "./time";
 import type { HomeAssistant } from "./types";
-import { buildRings, buildTimelineView } from "./view";
+import { buildLegend, buildRings, buildTimelineView } from "./view";
 
 declare const __VERSION__: string;
 const VERSION = __VERSION__;
@@ -204,6 +204,17 @@ export class HaEnergyWidget extends LitElement {
   }
 
   private body(config: ResolvedConfig): TemplateResult {
+    const content = this.layoutBody(config);
+    const snapshot = this.snapshot;
+    if (!config.legend || !snapshot) return content;
+    const items = buildLegend(snapshot.series, config, snapshot.forecast !== undefined);
+    return html`${content}${legendTemplate(
+      items,
+      items.map((item) => this.t(item.id)),
+    )}`;
+  }
+
+  private layoutBody(config: ResolvedConfig): TemplateResult {
     if (this.status === "empty") return html`<div class="message">${this.t("no_sources")}</div>`;
     const snapshot = this.snapshot;
     if (!snapshot) {

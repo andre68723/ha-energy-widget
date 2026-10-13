@@ -34,6 +34,8 @@ export interface CardConfig {
   entities?: Partial<Record<Channel, EntityList>> & { battery_level?: string };
   /** Draw the solar forecast of the Energy dashboard as a line (default true). */
   forecast?: boolean;
+  /** Show a legend naming the colors of solar, battery, grid and feed-in (default true). */
+  legend?: boolean;
   /** Ring and timeline scale in kWh; values above the maximum grow the scale, they are never clipped. */
   max?: { consumption?: number; production?: number; feed?: number; interval?: number };
   /** Any CSS color, e.g. `#ffd60a` or `var(--energy-solar-color)`. */
@@ -71,6 +73,7 @@ export interface ResolvedConfig {
   entities: Partial<Record<Channel, string[]>>;
   batteryLevel?: string;
   forecast: boolean;
+  legend: boolean;
   max: typeof DEFAULT_MAX;
   colors: Record<ColorRole, string>;
   tapAction: ActionConfig;
@@ -109,6 +112,7 @@ export function resolveConfig(raw: CardConfig): ResolvedConfig {
     entities,
     batteryLevel: raw.entities?.battery_level || undefined,
     forecast: raw.forecast !== false,
+    legend: raw.legend !== false,
     max: {
       consumption: positive(raw.max?.consumption, DEFAULT_MAX.consumption),
       production: positive(raw.max?.production, DEFAULT_MAX.production),

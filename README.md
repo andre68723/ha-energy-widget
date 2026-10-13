@@ -54,6 +54,7 @@ battery level; add it under `entities.battery_level`.
 | `time_range` | `last_24h` | `last_24h` or `today`; see below |
 | `title` | none | Card title |
 | `forecast` | `true` | Draw the solar forecast of the Energy dashboard as a gray line |
+| `legend` | `true` | Show a legend with the colors of solar, battery, grid and feed-in below the card |
 | `entities` | Energy dashboard | Energy meters per channel, see below |
 | `max` | see below | Scale of the rings and the timeline in kWh |
 | `colors` | Energy dashboard colors | Any CSS color per role |
