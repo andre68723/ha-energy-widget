@@ -10,6 +10,8 @@ interface FormSchema {
   flatten?: boolean;
   schema?: FormSchema[];
   selector?: Record<string, unknown>;
+  /** Which hint the field shows below it (Grafana queries). */
+  queryHint?: "energy" | "level" | "forecast";
 }
 
 /** The editor keeps entity lists as arrays (the multi-entity selector); the saved YAML stays minimal. */
@@ -124,7 +126,11 @@ export class HaEnergyWidgetEditor extends LitElement {
             type: "expandable",
             name: "queries",
             title: t("grafana_queries"),
-            schema: GRAFANA_KEYS.map((key) => ({ name: key, selector: { text: { multiline: true } } })),
+            schema: GRAFANA_KEYS.map((key) => ({
+              name: key,
+              selector: { text: { multiline: true } },
+              queryHint: key === "forecast" ? "forecast" : key === "battery_level" ? "level" : "energy",
+            })),
           },
         ],
       },
@@ -173,6 +179,10 @@ export class HaEnergyWidgetEditor extends LitElement {
     return key ? this.t(key) : schema.name;
   };
 
+  /** `ha-form` hands back the schema object it was given, so the hint can travel on it. */
+  private helper = (schema: FormSchema): string | undefined =>
+    schema.queryHint ? this.t(`help_query_${schema.queryHint}` as Key) : undefined;
+
   private onChange = (event: CustomEvent<{ value: Record<string, unknown> }>) => {
     event.stopPropagation();
     const config = fromFormData(event.detail.value);
@@ -189,6 +199,7 @@ export class HaEnergyWidgetEditor extends LitElement {
       .data=${toFormData(this.config)}
       .schema=${this.schema()}
       .computeLabel=${this.label}
+      .computeHelper=${this.helper}
       @value-changed=${this.onChange}
     ></ha-form>`;
   }

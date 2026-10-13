@@ -33,6 +33,12 @@ const en = {
   grafana_data_source: "Data source id or uid",
   grafana_database: "Database",
   grafana_queries: "Queries",
+  help_query_energy:
+    'kWh per 5 minutes, e.g. SELECT difference(last("value")) / 1000 FROM "meter" WHERE ${time-range} GROUP BY ${time-interval} fill(null)',
+  help_query_level:
+    'Percent, e.g. SELECT last("value") FROM "level" WHERE ${time-range} GROUP BY ${time-interval} fill(previous)',
+  help_query_forecast:
+    'kWh per 15 minutes of today, e.g. SELECT difference(last("value")) / 1000 FROM "forecast" WHERE ${time-range-forecast} GROUP BY ${time-interval}',
   max: "Scale (kWh)",
   max_consumption: "Consumption ring",
   max_production: "Production ring",
@@ -84,6 +90,12 @@ const de: Record<Key, string> = {
   grafana_data_source: "Datenquelle (ID oder UID)",
   grafana_database: "Datenbank",
   grafana_queries: "Abfragen",
+  help_query_energy:
+    'kWh je 5 Minuten, z. B. SELECT difference(last("value")) / 1000 FROM "zaehler" WHERE ${time-range} GROUP BY ${time-interval} fill(null)',
+  help_query_level:
+    'Prozent, z. B. SELECT last("value") FROM "stand" WHERE ${time-range} GROUP BY ${time-interval} fill(previous)',
+  help_query_forecast:
+    'kWh je 15 Minuten für heute, z. B. SELECT difference(last("value")) / 1000 FROM "prognose" WHERE ${time-range-forecast} GROUP BY ${time-interval}',
   max: "Skala (kWh)",
   max_consumption: "Ring Verbrauch",
   max_production: "Ring Erzeugung",
