@@ -230,7 +230,7 @@ export class HaEnergyWidget extends LitElement {
       battery: this.t("battery"),
     };
     const ringsRow = html`<div class="rings" style="--ring-count:${rings.length}">
-      ${rings.map((r) => ringTemplate(r, names[r.id] ?? r.id))}
+      ${rings.map((r) => ringTemplate(r, names[r.id] ?? r.id, config.ringLabels ? this.t(`caption_${r.id}`) : undefined))}
     </div>`;
     const timeline = () => {
       const view = buildTimelineView(snapshot.series, config, snapshot.dayStart, snapshot.forecast);

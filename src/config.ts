@@ -55,6 +55,8 @@ export interface CardConfig {
   forecast?: boolean;
   /** Show a legend naming the colors of solar, battery, grid and feed-in (default true). */
   legend?: boolean;
+  /** Show a caption under each ring: home, feed-in, solar, battery (default true). */
+  ring_labels?: boolean;
   /** Ring and timeline scale in kWh; values above the maximum grow the scale, they are never clipped. */
   max?: { consumption?: number; production?: number; feed?: number; interval?: number };
   /** Any CSS color, e.g. `#ffd60a` or `var(--energy-solar-color)`. */
@@ -103,6 +105,7 @@ export interface ResolvedConfig {
   grafana?: ResolvedGrafana;
   forecast: boolean;
   legend: boolean;
+  ringLabels: boolean;
   max: typeof DEFAULT_MAX;
   colors: Record<ColorRole, string>;
   tapAction: ActionConfig;
@@ -162,6 +165,7 @@ export function resolveConfig(raw: CardConfig): ResolvedConfig {
     grafana: resolveGrafana(raw.grafana),
     forecast: raw.forecast !== false,
     legend: raw.legend !== false,
+    ringLabels: raw.ring_labels !== false,
     max: {
       consumption: positive(raw.max?.consumption, DEFAULT_MAX.consumption),
       production: positive(raw.max?.production, DEFAULT_MAX.production),

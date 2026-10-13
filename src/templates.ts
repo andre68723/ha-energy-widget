@@ -19,13 +19,16 @@ function arcs(spec: RingSpec, radius: number, stroke: number) {
 }
 
 /** One ring with its value in the middle, as in the iOS widget. */
-export function ringTemplate(spec: RingSpec, label: string) {
-  return html`<div class="ring" role="img" aria-label="${label}: ${spec.text}">
-    <svg viewBox="0 0 100 100" aria-hidden="true">
-      <circle class="track" cx=${CENTER} cy=${CENTER} r="45.5" stroke-width="9" pathLength="100"></circle>
-      ${arcs(spec, 45.5, 9)}
-      <text x=${CENTER} y=${CENTER} class="value" fill=${spec.textColor}>${spec.text}</text>
-    </svg>
+export function ringTemplate(spec: RingSpec, label: string, caption?: string) {
+  return html`<div class="ring-item">
+    <div class="ring" role="img" aria-label="${label}: ${spec.text}">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <circle class="track" cx=${CENTER} cy=${CENTER} r="45.5" stroke-width="9" pathLength="100"></circle>
+        ${arcs(spec, 45.5, 9)}
+        <text x=${CENTER} y=${CENTER} class="value" fill=${spec.textColor}>${spec.text}</text>
+      </svg>
+    </div>
+    ${caption ? html`<span class="caption" aria-hidden="true">${caption}</span>` : nothing}
   </div>`;
 }
 

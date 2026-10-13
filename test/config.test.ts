@@ -9,6 +9,7 @@ describe("resolveConfig", () => {
     expect(c.timeRange).toBe("last_24h");
     expect(c.forecast).toBe(true);
     expect(c.legend).toBe(true);
+    expect(c.ringLabels).toBe(true);
     expect(c.max).toEqual(DEFAULT_MAX);
     expect(c.tapAction.action).toBe("navigate");
   });
@@ -22,6 +23,7 @@ describe("resolveConfig", () => {
       colors: { solar: " #ffd60a " },
       forecast: false,
       legend: false,
+      ring_labels: false,
     });
     expect(c.layout).toBe("rings_timeline");
     expect(c.timeRange).toBe("today");
@@ -30,6 +32,7 @@ describe("resolveConfig", () => {
     expect(c.colors.solar).toBe("#ffd60a");
     expect(c.forecast).toBe(false);
     expect(c.legend).toBe(false);
+    expect(c.ringLabels).toBe(false);
   });
 
   it("normalizes entity lists", () => {

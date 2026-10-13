@@ -97,6 +97,7 @@ export class HaEnergyWidgetEditor extends LitElement {
       },
       { name: "forecast", selector: { boolean: {} } },
       { name: "legend", selector: { boolean: {} } },
+      { name: "ring_labels", selector: { boolean: {} } },
       {
         type: "expandable",
         name: "entities",
@@ -150,6 +151,7 @@ export class HaEnergyWidgetEditor extends LitElement {
       time_range: "time_range",
       forecast: "forecast_line",
       legend: "show_legend",
+      ring_labels: "show_ring_labels",
       tap_action: "tap_action",
       solar: "solar",
       grid_import: "grid_import",

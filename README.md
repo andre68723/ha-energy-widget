@@ -55,6 +55,7 @@ battery level; add it under `entities.battery_level`.
 | `title` | none | Card title |
 | `forecast` | `true` | Draw the solar forecast of the Energy dashboard as a gray line |
 | `legend` | `true` | Show a legend with the colors of solar, battery, grid and feed-in below the card |
+| `ring_labels` | `true` | Caption under each ring: Home, Feed-in, Solar, Battery |
 | `entities` | Energy dashboard | Energy meters per channel, see below |
 | `grafana` | none | InfluxQL queries as a fallback where Home Assistant has no data, see below |
 | `max` | see below | Scale of the rings and the timeline in kWh |

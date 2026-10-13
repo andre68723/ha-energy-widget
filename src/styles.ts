@@ -36,6 +36,23 @@ export const cardStyles = css`
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
+  .ring-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    max-width: 170px;
+    min-width: 0;
+  }
+  .caption {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.8rem;
+    color: var(--secondary-text-color);
+  }
   .ring,
   .nested {
     width: 100%;
