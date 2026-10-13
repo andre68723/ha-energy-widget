@@ -138,7 +138,7 @@ export class HaEnergyWidget extends LitElement {
     this.loadedKey = "loading";
     try {
       const sources = await this.sources();
-      if (Object.keys(sources.channels).length === 0) {
+      if (Object.keys(sources.channels).length === 0 && !this.config.grafana) {
         if (generation === this.generation) {
           this.status = "empty";
           this.snapshot = undefined;

@@ -1,5 +1,5 @@
 import { html, LitElement, type TemplateResult } from "lit";
-import { type CardConfig, CHANNELS, COLOR_ROLES, LAYOUTS, TIME_RANGES, toList } from "./config";
+import { type CardConfig, CHANNELS, COLOR_ROLES, GRAFANA_KEYS, LAYOUTS, TIME_RANGES, toList } from "./config";
 import { type Key, localize } from "./localize";
 import type { HomeAssistant } from "./types";
 
@@ -23,22 +23,23 @@ function toFormData(config: CardConfig): Record<string, unknown> {
   return { ...config, entities };
 }
 
-function fromFormData(data: Record<string, unknown>): CardConfig {
-  const out: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(data)) {
-    if (value === undefined || value === "" || value === null) continue;
-    if (typeof value === "object" && !Array.isArray(value)) {
-      const cleaned = Object.fromEntries(
-        Object.entries(value as Record<string, unknown>)
-          .map(([k, v]) => [k, Array.isArray(v) && v.length === 1 ? v[0] : v] as const)
-          .filter(([, v]) => v !== undefined && v !== "" && !(Array.isArray(v) && v.length === 0)),
-      );
-      if (Object.keys(cleaned).length > 0) out[key] = cleaned;
-    } else {
-      out[key] = value;
-    }
+/** Drops empty values at any depth and unwraps one-element entity lists, so the saved YAML stays minimal. */
+function clean(value: unknown): unknown {
+  if (Array.isArray(value)) return value.length === 1 ? value[0] : value.length === 0 ? undefined : value;
+  if (value === null || value === "") return undefined;
+  if (typeof value === "object") {
+    const out = Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .map(([k, v]) => [k, clean(v)] as const)
+        .filter(([, v]) => v !== undefined),
+    );
+    return Object.keys(out).length > 0 ? out : undefined;
   }
-  return out as unknown as CardConfig;
+  return value;
+}
+
+function fromFormData(data: Record<string, unknown>): CardConfig {
+  return (clean(data) ?? {}) as unknown as CardConfig;
 }
 
 export class HaEnergyWidgetEditor extends LitElement {
@@ -111,6 +112,23 @@ export class HaEnergyWidgetEditor extends LitElement {
       },
       {
         type: "expandable",
+        name: "grafana",
+        title: t("grafana"),
+        schema: [
+          { name: "url", selector: { text: { type: "url" } } },
+          { name: "token", selector: { text: { type: "password" } } },
+          { name: "data_source", selector: { text: {} } },
+          { name: "database", selector: { text: {} } },
+          {
+            type: "expandable",
+            name: "queries",
+            title: t("grafana_queries"),
+            schema: GRAFANA_KEYS.map((key) => ({ name: key, selector: { text: { multiline: true } } })),
+          },
+        ],
+      },
+      {
+        type: "expandable",
         name: "max",
         title: t("max"),
         schema: [number("consumption"), number("production"), number("feed"), number("interval")],
@@ -143,6 +161,10 @@ export class HaEnergyWidgetEditor extends LitElement {
       production: "max_production",
       feed: "max_feed",
       interval: "max_interval",
+      url: "grafana_url",
+      token: "grafana_token",
+      data_source: "grafana_data_source",
+      database: "grafana_database",
     };
     // Color fields share the channel names; the schema name alone is enough as they sit in their own group.
     const key = names[schema.name];

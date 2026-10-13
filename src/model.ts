@@ -294,3 +294,20 @@ export function buildTimeline(series: Series, dayStartMs: number, timeRange: "la
   }
   return { columns, nowIndex };
 }
+
+/** Forecast from per-quarter-hour kWh values keyed by timestamp (a Grafana query); undefined without any value. */
+export function forecastFromSlots(
+  values: ReadonlyMap<number, number>,
+  dayStartMs: number,
+): Float64Array | undefined {
+  const out = new Float64Array(SLOTS);
+  let any = false;
+  for (const [t, kwh] of values) {
+    const slot = Math.floor((t - dayStartMs) / SLOT_MS);
+    if (slot >= 0 && slot < SLOTS && Number.isFinite(kwh) && kwh >= 0) {
+      out[slot] = (out[slot] ?? 0) + kwh;
+      any = true;
+    }
+  }
+  return any ? out : undefined;
+}

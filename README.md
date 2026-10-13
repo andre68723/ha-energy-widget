@@ -56,6 +56,7 @@ battery level; add it under `entities.battery_level`.
 | `forecast` | `true` | Draw the solar forecast of the Energy dashboard as a gray line |
 | `legend` | `true` | Show a legend with the colors of solar, battery, grid and feed-in below the card |
 | `entities` | Energy dashboard | Energy meters per channel, see below |
+| `grafana` | none | InfluxQL queries as a fallback where Home Assistant has no data, see below |
 | `max` | see below | Scale of the rings and the timeline in kWh |
 | `colors` | Energy dashboard colors | Any CSS color per role |
 | `tap_action` | navigate to `/energy` | `navigate`, `url`, `more-info` or `none` |
@@ -93,6 +94,47 @@ colors:
 ```
 
 Battery charge and discharge belong together: with only one of them the battery is left out.
+
+### Grafana as a fallback
+
+Home Assistant stays the primary source. For every channel that Home Assistant has no statistics for (no entity,
+not in the Energy dashboard, or no data in the last 24 hours) the card runs the configured InfluxQL query against
+a Grafana data source, the way the iOS widget does. Channels with Home Assistant data are never queried.
+
+```yaml
+type: custom:ha-energy-widget
+grafana:
+  url: https://grafana.example.com
+  token: glsa_xxx            # service account token with the Viewer role
+  data_source: 1             # numeric id or uid of the InfluxDB data source
+  database: measurements
+  queries:
+    solar: >-
+      SELECT difference(last("value")) / 1000 FROM "photovoltaics-energy-counter-consumption"
+      WHERE ${time-range} GROUP BY ${time-interval} fill(null)
+    grid_import: SELECT difference(last("value")) / 1000 FROM "grid-energy-counter-in" WHERE ${time-range} GROUP BY ${time-interval} fill(null)
+    grid_export: SELECT difference(last("value")) / 1000 FROM "grid-energy-counter-out" WHERE ${time-range} GROUP BY ${time-interval} fill(null)
+    battery_charge: SELECT difference(last("value")) / 1000 FROM "battery-energy-counter-charge" WHERE ${time-range} GROUP BY ${time-interval} fill(null)
+    battery_discharge: SELECT difference(last("value")) / 1000 FROM "battery-energy-counter-discharge" WHERE ${time-range} GROUP BY ${time-interval} fill(null)
+    battery_level: SELECT last("value") FROM "battery-charge-level" WHERE ${time-range} GROUP BY ${time-interval} fill(previous)
+    forecast: SELECT difference(last("value")) / 1000 FROM "photovoltaics-energy-counter-forecast" WHERE ${time-range-forecast} GROUP BY ${time-interval} fill(null)
+```
+
+* Queries are the ones of the iOS widget and return kWh per bucket (`difference(last("value"))` of a counter).
+  Use only the first series of a query; sum several meters in the query itself.
+* `${time-range}` is the last 24 hours, `${time-range-forecast}` is today, `${time-interval}` is `time(5m)`
+  (`time(15m)` for `forecast`).
+* The request is `GET <url>/api/datasources/proxy/<id>/query?db=…&epoch=ms&q=…` and only reads.
+* Without `queries` the option is ignored. A query that fails is logged to the browser console and skipped.
+
+Two things to know before you use it:
+
+* **CORS.** The browser sends the request from the Home Assistant origin. Grafana has no CORS setting for its
+  HTTP API, so put a reverse proxy in front of it that answers `Access-Control-Allow-Origin` (and the `OPTIONS`
+  preflight for the `Authorization` header) for your Home Assistant URL. An `https` Home Assistant also needs an
+  `https` Grafana (no mixed content).
+* **The token is visible** to everyone who can open the dashboard (it is part of the card configuration).
+  Use a service account with the Viewer role that may only read that one data source.
 
 ### Scale
 

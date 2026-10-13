@@ -15,6 +15,23 @@ export const CHANNELS = [
 ] as const;
 export type Channel = (typeof CHANNELS)[number];
 
+/** Queries that can be answered by Grafana: the five meters, the battery level and the solar forecast. */
+export const GRAFANA_KEYS = [...CHANNELS, "battery_level", "forecast"] as const;
+export type GrafanaKey = (typeof GRAFANA_KEYS)[number];
+
+export interface GrafanaConfig {
+  /** Base URL of Grafana, e.g. `https://grafana.local:3000`. */
+  url: string;
+  /** Service account token or API key with the Viewer role. */
+  token?: string;
+  /** Numeric id or uid of the InfluxDB data source. */
+  data_source: number | string;
+  /** InfluxDB database (or bucket mapped by DBRP) the InfluxQL queries run against. */
+  database: string;
+  /** InfluxQL per key; see the README for the placeholders. */
+  queries?: Partial<Record<GrafanaKey, string>>;
+}
+
 /** One entity or several (e.g. two inverters): their energy is summed. */
 export type EntityList = string | string[];
 
@@ -32,6 +49,8 @@ export interface CardConfig {
   time_range?: TimeRange;
   /** Missing channels fall back to the Energy dashboard configuration. */
   entities?: Partial<Record<Channel, EntityList>> & { battery_level?: string };
+  /** Fallback source: used per channel where Home Assistant has no statistics. */
+  grafana?: GrafanaConfig;
   /** Draw the solar forecast of the Energy dashboard as a line (default true). */
   forecast?: boolean;
   /** Show a legend naming the colors of solar, battery, grid and feed-in (default true). */
@@ -65,6 +84,14 @@ export const DEFAULT_COLORS: Record<ColorRole, string> = {
 
 export const DEFAULT_MAX = { consumption: 20, production: 20, feed: 20, interval: 1.5 };
 
+export interface ResolvedGrafana {
+  url: string;
+  token?: string;
+  dataSource: number | string;
+  database: string;
+  queries: Partial<Record<GrafanaKey, string>>;
+}
+
 export interface ResolvedConfig {
   title?: string;
   layout: Layout;
@@ -72,6 +99,8 @@ export interface ResolvedConfig {
   /** Explicitly configured entities per channel; empty = use the Energy dashboard. */
   entities: Partial<Record<Channel, string[]>>;
   batteryLevel?: string;
+  /** Only present when at least one query is configured. */
+  grafana?: ResolvedGrafana;
   forecast: boolean;
   legend: boolean;
   max: typeof DEFAULT_MAX;
@@ -90,6 +119,25 @@ function oneOf<T extends string>(allowed: readonly T[], value: unknown, fallback
 
 function positive(value: unknown, fallback: number): number {
   return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
+function resolveGrafana(raw: GrafanaConfig | undefined): ResolvedGrafana | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const queries: Partial<Record<GrafanaKey, string>> = {};
+  for (const key of GRAFANA_KEYS) {
+    const query = raw.queries?.[key];
+    if (typeof query === "string" && query.trim() !== "") queries[key] = query.trim();
+  }
+  if (Object.keys(queries).length === 0) return undefined;
+  const url = typeof raw.url === "string" ? raw.url.trim().replace(/\/+$/, "") : "";
+  if (!/^https?:\/\/./i.test(url)) throw new Error("grafana.url must start with http:// or https://");
+  const dataSource =
+    typeof raw.data_source === "number" ? raw.data_source : String(raw.data_source ?? "").trim();
+  if (dataSource === "") throw new Error("grafana.data_source is required");
+  const database = typeof raw.database === "string" ? raw.database.trim() : "";
+  if (database === "") throw new Error("grafana.database is required");
+  const token = typeof raw.token === "string" && raw.token.trim() !== "" ? raw.token.trim() : undefined;
+  return { url, token, dataSource, database, queries };
 }
 
 /** Throws for a config that cannot work, so Home Assistant shows its error card. */
@@ -111,6 +159,7 @@ export function resolveConfig(raw: CardConfig): ResolvedConfig {
     timeRange: oneOf(TIME_RANGES, raw.time_range, "last_24h"),
     entities,
     batteryLevel: raw.entities?.battery_level || undefined,
+    grafana: resolveGrafana(raw.grafana),
     forecast: raw.forecast !== false,
     legend: raw.legend !== false,
     max: {

@@ -1,7 +1,16 @@
 /** Loads the statistics, the Energy dashboard preferences and the solar forecast through the Home Assistant API. */
-import type { Channel, ResolvedConfig } from "./config";
+import type { Channel, GrafanaKey, ResolvedConfig } from "./config";
 import { CHANNELS } from "./config";
-import { addStatistics, createSeries, forecastForDay, type Series, type StatisticPoint } from "./model";
+import { type GrafanaValues, queryGrafana, windowFor } from "./grafana";
+import {
+  addPart,
+  addStatistics,
+  createSeries,
+  forecastForDay,
+  forecastFromSlots,
+  type Series,
+  type StatisticPoint,
+} from "./model";
 import { startOfDay } from "./time";
 import type { HomeAssistant } from "./types";
 
@@ -96,6 +105,7 @@ export async function loadSnapshot(
   config: ResolvedConfig,
   sources: Sources,
   nowMs: number,
+  fetchImpl: typeof fetch = fetch,
 ): Promise<Snapshot> {
   const configured = Object.fromEntries(
     CHANNELS.map((c) => [c, (sources.channels[c]?.length ?? 0) > 0]),
@@ -106,15 +116,21 @@ export async function loadSnapshot(
   const ids = unique([...CHANNELS.flatMap((c) => sources.channels[c] ?? []), sources.batteryLevel]);
   let batteryLevel: number | undefined;
   if (ids.length > 0) {
-    const reply = await hass.callWS<StatisticsReply>({
-      type: "recorder/statistics_during_period",
-      start_time: new Date(series.windowStart).toISOString(),
-      end_time: new Date(nowMs + 5 * 60_000).toISOString(),
-      statistic_ids: ids,
-      period: "5minute",
-      types: ["change", "mean"],
-      units: { energy: "kWh" },
-    });
+    let reply: StatisticsReply = {};
+    try {
+      reply = await hass.callWS<StatisticsReply>({
+        type: "recorder/statistics_during_period",
+        start_time: new Date(series.windowStart).toISOString(),
+        end_time: new Date(nowMs + 5 * 60_000).toISOString(),
+        statistic_ids: ids,
+        period: "5minute",
+        types: ["change", "mean"],
+        units: { energy: "kWh" },
+      });
+    } catch (error) {
+      if (!config.grafana) throw error; // without a fallback the card shows its error state
+      console.warn("ha-energy-widget: statistics failed, trying Grafana", error);
+    }
     for (const c of CHANNELS) {
       const lists = (sources.channels[c] ?? []).map((id) => (reply[id] ?? []) as StatisticPoint[]);
       addStatistics(series, c, lists);
@@ -136,6 +152,38 @@ export async function loadSnapshot(
       forecast = forecastForDay(chosen, dayStart);
     } catch {
       forecast = undefined; // no forecast configured: the line is simply left out
+    }
+  }
+
+  // Grafana only fills what Home Assistant could not: a channel without entities or without any statistics.
+  const grafana = config.grafana;
+  if (grafana) {
+    const wanted: GrafanaKey[] = CHANNELS.filter(
+      (c) => grafana.queries[c] && (!configured[c] || !series.parts[c].some((parts) => parts !== 0)),
+    );
+    if (grafana.queries.battery_level && batteryLevel === undefined) wanted.push("battery_level");
+    if (grafana.queries.forecast && config.forecast && forecast === undefined) wanted.push("forecast");
+    if (wanted.length > 0) {
+      try {
+        const dayEnd = startOfDay(dayStart + 36 * 3_600_000, timeZoneOf(hass));
+        const window = windowFor(series.windowStart, nowMs, dayStart, dayEnd);
+        const values = await queryGrafana(grafana, wanted, window, fetchImpl);
+        for (const key of wanted) {
+          const points: GrafanaValues = values[key] ?? new Map();
+          if (key === "forecast") {
+            forecast = forecastFromSlots(points, dayStart);
+          } else if (key === "battery_level") {
+            const last = [...points].sort((a, b) => a[0] - b[0]).at(-1);
+            if (last) batteryLevel = last[1];
+          } else {
+            let stored = 0;
+            for (const [start, kwh] of points) if (addPart(series, key, start, kwh)) stored++;
+            if (stored > 0) series.configured[key] = true;
+          }
+        }
+      } catch (error) {
+        console.warn("ha-energy-widget: Grafana query failed", error);
+      }
     }
   }
   return { series, forecast, batteryLevel, nowMs, dayStart, channels: sources.channels };

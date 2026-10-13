@@ -23,6 +23,7 @@ Target: Home Assistant 2026.10 or newer. Remote: `https://github.com/andre68723/
 | `src/editor.ts` | Visual editor on `ha-form` (`ha-energy-widget-editor`) |
 | `src/config.ts` | YAML shape, defaults, `resolveConfig()` |
 | `src/data.ts` | WebSocket calls: Energy preferences, statistics, solar forecast; maps them to channels |
+| `src/grafana.ts` | Grafana fallback: InfluxQL placeholders, data source proxy URL, reply parsing |
 | `src/model.ts` | Pure model: 96 quarter-hour slots, mix rules, totals, forecast spreading, timeline columns |
 | `src/view.ts` | Pure: ring specs and timeline bars from the model |
 | `src/templates.ts`, `src/styles.ts` | SVG/Lit templates and CSS |
@@ -42,7 +43,8 @@ Target: Home Assistant 2026.10 or newer. Remote: `https://github.com/andre68723/
 * A new option needs: `src/config.ts` (type, default, `resolveConfig`), the editor schema and labels in
   `src/localize.ts` (English and German), a test and the README table.
 * Colors default to the Energy dashboard's theme variables (`--energy-*-color`), with fixed fallbacks.
-* Read Home Assistant only; the dev page uses synthetic data, never real entity ids or personal data.
+* Read only: Home Assistant, and Grafana through user-configured InfluxQL `GET` queries (`src/grafana.ts`, a fallback
+  per channel). Tests and the dev page use synthetic data, never real entity ids, hosts, tokens or personal data.
 * Do not commit `dist/`, `node_modules/` or local notes; screenshots in `docs/` come from the dev page.
 
 ## Verification
