@@ -1,6 +1,6 @@
 {
   "name": "ha-energy-widget",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Home Assistant Lovelace card: rings and a 15-minute timeline of the last 24 hours of energy flows, inspired by aharren/ios-energy-widget.",
   "license": "MIT",
   "author": "andre68723",
